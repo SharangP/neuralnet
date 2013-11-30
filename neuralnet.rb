@@ -32,14 +32,24 @@ class NeuralNet
                 n.weights = file.gets.split(" ").map {|s| s.to_f}
             end
 
-            puts "initializing a neural network with #{@nin} input nodes, #{@nhidden} hidden nodes, and #{@nout} output nodes"
+            @nodes[2].each do |n|
+                n.weights = file.gets.split(" ").map {|s| s.to_f}
+            end
+
+            #puts "initializing a neural network with #{@nin} input nodes, #{@nhidden} hidden nodes, and #{@nout} output nodes"
         end
     end
 
-    def print(fname = nil)
-        puts @nin, @nhidden, @nout
-#        print @nodes[1]
-#        print @nodes[2]
+    # Prints Neural Network to file
+    # TODO: make modular for L layers
+    def printToFile(fname = nil)
+        puts [@nin, @nhidden, @nout].join(" ")
+        @nodes[1].each do |n|
+            puts n.weights.join(" ")
+        end
+        @nodes[2].each do |n|
+            puts n.weights.join(" ")
+        end
     end
 
     private :loadFromFile
