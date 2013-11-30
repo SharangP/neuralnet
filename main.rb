@@ -8,7 +8,15 @@
 # 11/30/2013
 ####################
 
-require_relative 'parser'
+require_relative 'neuralnet'
 
-p = Parser.new
-p.neuralNet
+puts "Welcome to Sharang's Neural Net Program"
+print "Enter an initialization file name: "
+init = gets.chomp
+print "Enter a training file name: "
+train = gets.chomp
+print "Enter an output file name: "
+out = gets.chomp
+
+nn = NeuralNet.new(init)
+nn.print()

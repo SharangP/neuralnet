@@ -6,5 +6,12 @@
 #########################
 
 class Node
-    @weights = Array.new
+    def initialize()
+        @ninputs = 0
+        @inputs = []
+        @weights = []
+        @activation = nil
+    end
+
+    attr_accessor :ninputs, :inputs, :weights, :activation
 end
