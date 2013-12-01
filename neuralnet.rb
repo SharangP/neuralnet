@@ -16,6 +16,10 @@ class NeuralNet
         end
     end
 
+    # Loads Neural Network from file
+    # first line of input specifies # input nodes, # hidden nodes, and # output
+    # nodes. The next nhidden lines specify the initial weights of hidden
+    # nodes. The next line specifies the initial weights of output nodes.
     def loadFromFile(fname)
         File.open(fname, "r") do |file|
             #parse the number of nodes in each layer
@@ -28,27 +32,29 @@ class NeuralNet
                       Array.new(@nhidden) {Node.new},
                       Array.new(@nout) {Node.new}]
             
-            @nodes[1].each do |n|
-                n.weights = file.gets.split(" ").map {|s| s.to_f}
+            for i in 1..@nodes.length-1
+                @nodes[i].each do |n|
+                    n.weights = file.gets.split(" ").map {|s| s.to_f}
+                end
             end
-
-            @nodes[2].each do |n|
-                n.weights = file.gets.split(" ").map {|s| s.to_f}
-            end
-
-            #puts "initializing a neural network with #{@nin} input nodes, #{@nhidden} hidden nodes, and #{@nout} output nodes"
+            
+            $stderr.puts "initializing a neural network with #{@nin} input nodes, #{@nhidden} hidden nodes, and #{@nout} output nodes"
         end
     end
 
     # Prints Neural Network to file
-    # TODO: make modular for L layers
     def printToFile(fname = nil)
-        puts [@nin, @nhidden, @nout].join(" ")
-        @nodes[1].each do |n|
-            puts n.weights.join(" ")
-        end
-        @nodes[2].each do |n|
-            puts n.weights.join(" ")
+        File.open(fname, 'w') do |f|
+            f.puts [@nin, @nhidden, @nout].join(" ")
+            for i in 1..@nodes.length-1
+                @nodes[i].each_with_index do |n, nindex|
+                    n.weights.each_with_index do |w, windex|
+                        f.print "%.3f" % w
+                        if windex != n.weights.length-1 then f.print " " end
+                    end
+                    if nindex != n.weights.length-1 then f.print "\n" end
+                end
+            end
         end
     end
 

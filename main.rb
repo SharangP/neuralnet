@@ -20,4 +20,4 @@ require_relative 'neuralnet'
 
 init = 'data/sample.NNWDBC.init'
 nn = NeuralNet.new(init)
-nn.printToFile()
+nn.printToFile('test.out')
