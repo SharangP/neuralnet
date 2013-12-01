@@ -32,7 +32,7 @@ print "Enter an initialization file name: "
 print "Enter a training/testing file name: "
 #data = file_prompt()
 print "Enter an output file name: "
-#out = file_prompt()
+#out = gets.chomp
 
 init = 'data/sample.NNWDBC.init' #remove
 
@@ -42,7 +42,7 @@ nn.load_from_file(init)
 case isTest
 when 0
     data = 'data/wdbc.mini_train'
-    out = 'wwbdc_mini.trained'
+    out = 'my_wwbdc_mini.trained'
 
     print "Enter a learning rate: "
     learningRate = gets.chomp.to_f

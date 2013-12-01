@@ -91,9 +91,8 @@ class NeuralNet
     # Iterate for nepochs, adjusting the weights of the NN 'nn' to map training
     # data 'data' to outputs 'outputs'
     def backprop_learn(nn, data, outputs)
-
+        return nn
     end
 
     private :backprop_learn
-
 end
