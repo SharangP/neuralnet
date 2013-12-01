@@ -10,6 +10,7 @@
 
 require_relative 'neuralnet'
 
+
 #puts "Welcome to Sharang's Neural Net Program"
 #print "Enter an initialization file name: "
 #init = gets.chomp
@@ -20,4 +21,4 @@ require_relative 'neuralnet'
 
 init = 'data/sample.NNWDBC.init'
 nn = NeuralNet.new(init)
-nn.printToFile('test.out')
+nn.print_to_file('test.out')

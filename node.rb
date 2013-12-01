@@ -7,6 +7,7 @@
 
 class Node
     def initialize()
+        @@bias_input = -1
         @ninputs = 0
         @inputs = []
         @weights = []
