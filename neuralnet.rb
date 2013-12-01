@@ -9,11 +9,14 @@ require_relative 'node'
 
 
 class NeuralNet
+
+    # Constructor
     def initialize()
         @nodes = []
         @nin = nil
         @nhidden = nil
         @nout = nil
+        @ntrain = nil
     end
 
     # Loads Neural Network from file
@@ -21,9 +24,9 @@ class NeuralNet
     # nodes. The next nhidden lines specify the initial weights of hidden
     # nodes. The next line specifies the initial weights of output nodes.
     def load_from_file(fname)
-        File.open(fname, 'r') do |file|
+        File.open(fname, 'r') do |f|
             #parse the number of nodes in each layer
-            nnodes = file.gets.split(" ").map {|s| s.to_i}
+            nnodes = f.gets.split(" ").map {|s| s.to_i}
             @nin = nnodes[0]
             @nhidden = nnodes[1]
             @nout = nnodes[2]
@@ -34,7 +37,7 @@ class NeuralNet
             
             for i in 1..@nodes.length-1
                 @nodes[i].each do |n|
-                    n.weights = file.gets.split(" ").map {|s| s.to_f}
+                    n.weights = f.gets.split(" ").map {|s| s.to_f}
                 end
             end
             
@@ -43,7 +46,8 @@ class NeuralNet
     end
 
     # Prints Neural Network to file
-    def print_to_file(fname = nil)
+    # #TODO: add stdout printing if fname==nil
+    def print_to_file(fname)
         File.open(fname, 'w') do |f|
             f.puts [@nin, @nhidden, @nout].join(" ")
             for i in 1..@nodes.length-1
@@ -62,7 +66,34 @@ class NeuralNet
     # Train with data in file 'fname' at a learning rate of 'rate'
     # for 'nepochs' epochs
     def train(fname, rate, nepochs)
-        puts "train now."
+        puts "Begin training"
+        File.open(fname, 'r') do |f|
+            #parse the number of nodes in each layer
+            nnodes = f.gets.split(" ").map {|s| s.to_i}
+            @ntrain = nnodes[0]
+            if nnodes[1] != @nin || nnodes[2] != @nout
+                $stderr.puts "Lies! nin or nout are not the same as the init file"
+                exit
+            end
+
+            data = []
+            outputs = []
+            f.readlines.each do |line|
+                l = line.split(" ").map {|d| d.to_f}
+                data << l[0...-1]
+                outputs << l[-1].to_i
+            end
+            @nodes = backprop_learn(@nodes, data, outputs)
+        end
     end
+
+    # Learn optimal weights using backpropagation
+    # Iterate for nepochs, adjusting the weights of the NN 'nn' to map training
+    # data 'data' to outputs 'outputs'
+    def backprop_learn(nn, data, outputs)
+
+    end
+
+    private :backprop_learn
 
 end

@@ -28,25 +28,29 @@ print "Training (0) or testing (1)?: "
 isTest = gets.chomp.to_i
 
 print "Enter an initialization file name: "
-init = file_prompt()
-init = 'data/sample.NNWDBC.init' #remove
+#init = file_prompt()
 print "Enter a training/testing file name: "
-data = file_prompt()
+#data = file_prompt()
 print "Enter an output file name: "
-out = file_prompt()
+#out = file_prompt()
+
+init = 'data/sample.NNWDBC.init' #remove
 
 nn = NeuralNet.new
 nn.load_from_file(init)
 
 case isTest
 when 0
+    data = 'data/wdbc.mini_train'
+    out = 'wwbdc_mini.trained'
+
     print "Enter a learning rate: "
     learningRate = gets.chomp.to_f
-    print "How many epochs to train for? "
+    print "Enter a number of epochs to train for: "
     nepochs = gets.chomp.to_i
 
     nn.train(data, learningRate, nepochs)
-    nn.print_to_file('test.out')
+    nn.print_to_file(out)
 when 1
     puts "This should probably test the NN."
 end
