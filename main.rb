@@ -26,6 +26,7 @@ end
 puts "Welcome to Sharang's Neural Net Program"
 print "Training (0) or testing (1)?: "
 isTest = gets.chomp.to_i
+#TODO: make sure isTest is 0 or 1
 
 print "Enter an initialization file name: "
 #init = file_prompt()
@@ -41,7 +42,8 @@ nn.load_from_file(init)
 
 case isTest
 when 0
-    data = 'data/wdbc.mini_train'
+    #data = 'data/wdbc.mini_train'
+    data = 'data/wdbc.train'
     out = 'my_wwbdc_mini.trained'
 
     print "Enter a learning rate: "

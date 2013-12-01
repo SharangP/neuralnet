@@ -5,14 +5,16 @@
 # 11/30/2013
 #########################
 
+# Neural Network Node class
+
 class Node
     def initialize()
         @@bias_input = -1
-        @ninputs = 0
         @inputs = []
         @weights = []
+        @inval = nil
         @activation = nil
     end
 
-    attr_accessor :ninputs, :inputs, :weights, :activation
+    attr_accessor :inputs, :weights, :inval, :activation
 end

@@ -35,9 +35,10 @@ class NeuralNet
                       Array.new(@nhidden) {Node.new},
                       Array.new(@nout) {Node.new}]
             
-            for i in 1..@nodes.length-1
+            for i in 1..@nodes.length-1 #TODO:use each instead
                 @nodes[i].each do |n|
                     n.weights = f.gets.split(" ").map {|s| s.to_f}
+                    n.inputs = @nodes[i-1]
                 end
             end
             
@@ -63,9 +64,9 @@ class NeuralNet
     end
 
     # Train neural network
-    # Train with data in file 'fname' at a learning rate of 'rate'
+    # Train with data in file 'fname' at a learning rate of 'lrate'
     # for 'nepochs' epochs
-    def train(fname, rate, nepochs)
+    def train(fname, lrate, nepochs)
         puts "Begin training"
         File.open(fname, 'r') do |f|
             #parse the number of nodes in each layer
@@ -83,16 +84,39 @@ class NeuralNet
                 data << l[0...-1]
                 outputs << l[-1].to_i
             end
-            @nodes = backprop_learn(@nodes, data, outputs)
+            backprop_learn(nepochs, lrate, data, outputs)
         end
     end
 
     # Learn optimal weights using backpropagation
-    # Iterate for nepochs, adjusting the weights of the NN 'nn' to map training
-    # data 'data' to outputs 'outputs'
-    def backprop_learn(nn, data, outputs)
-        return nn
+    # Iterate for nepochs with a learning rate of lrate, adjusting the weights
+    # of @nodes to map training data 'data' to outputs 'outputs'
+    def backprop_learn(nepochs, lrate, data, outputs)
+        puts "data length: #{data.length}"
+        puts "outputs length: #{outputs.length}"
+        (1..nepochs).each do
+            puts data.length, data.flatten.length
+            for m in 0..data.length-1
+                # initialize inputs with data
+                data[m].each_with_index {|d, dindex| @nodes[0][dindex].activation = d}
+
+                # propagate inputs forward
+                @nodes[1..-1].each do |n|
+                    n.inval = 0
+                    n.inputs.each_with_index {|i, index| n.inval += n.weights[iindex]*i.inval}
+                    n.activation = sigmoid(n.inval)
+                end
+
+                # propagate error backwards
+            end
+        end
     end
 
-    private :backprop_learn
-end
+    # Sigmoid activation function
+    def sigmoid(x)
+        return 1
+    end
+
+
+    private :backprop_learn, :sigmoid
+end  
