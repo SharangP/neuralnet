@@ -9,11 +9,11 @@ require_relative 'node'
 
 
 class NeuralNet
-    def initialize(fname = nil)
+    def initialize()
         @nodes = []
-        if File.exists?(fname)
-            load_from_file(fname)
-        end
+        @nin = nil
+        @nhidden = nil
+        @nout = nil
     end
 
     # Loads Neural Network from file
@@ -21,7 +21,7 @@ class NeuralNet
     # nodes. The next nhidden lines specify the initial weights of hidden
     # nodes. The next line specifies the initial weights of output nodes.
     def load_from_file(fname)
-        File.open(fname, "r") do |file|
+        File.open(fname, 'r') do |file|
             #parse the number of nodes in each layer
             nnodes = file.gets.split(" ").map {|s| s.to_i}
             @nin = nnodes[0]
@@ -58,5 +58,11 @@ class NeuralNet
         end
     end
 
-    private :load_from_file
+    # Train neural network
+    # Train with data in file 'fname' at a learning rate of 'rate'
+    # for 'nepochs' epochs
+    def train(fname, rate, nepochs)
+        puts "train now."
+    end
+
 end
