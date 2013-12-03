@@ -8,8 +8,13 @@
 # Neural Network Node class
 
 class Node
+    @@bias_input = -1
+    
+    def self.bias_input
+        @@bias_input
+    end
+
     def initialize()
-        @@bias_input = -1
         @inputs = []
         @weights = []
         @inval = nil
@@ -17,6 +22,5 @@ class Node
         @delta = nil
     end
 
-#    attr_reader :bias_input
     attr_accessor :inputs, :weights, :inval, :activation, :delta
 end
