@@ -92,31 +92,56 @@ class NeuralNet
     # Iterate for nepochs with a learning rate of lrate, adjusting the weights
     # of @nodes to map training data 'data' to outputs 'outputs'
     def backprop_learn(nepochs, lrate, data, outputs)
-        puts "data length: #{data.length}"
-        puts "outputs length: #{outputs.length}"
-        (1..nepochs).each do
-            puts data.length, data.flatten.length
+        nepochs.times do |e|
+            puts "Epoch #{e} of #{nepochs}"
+
             for m in 0..data.length-1
                 # initialize inputs with data
                 data[m].each_with_index {|d, dindex| @nodes[0][dindex].activation = d}
 
                 # propagate inputs forward
-                @nodes[1..-1].each do |n|
-                    n.inval = 0
-                    n.inputs.each_with_index {|i, index| n.inval += n.weights[iindex]*i.inval}
-                    n.activation = sigmoid(n.inval)
+                @nodes[1..-1].each do |l|
+                    l.each do |n|
+                        n.inval = 0
+                        n.inputs.each_with_index {|i, iindex| n.inval += n.weights[iindex]*n.inval} #TODO: bias weights?
+                        n.activation = sig(n.inval)
+                    end
                 end
 
                 # propagate error backwards
+                # find deltas of output layer
+                @nodes[-1].each_with_index do |n, nindex|
+                    n.delta = delsig(n.inval)*(outputs[nindex] - n.activation)
+                end
+
+                # find deltas of each hidden layer
+                for l in 1..@nodes.length-2
+                    @nodes[l].each_with_index do |n, nindex|
+                        error = 0
+                        @nodes[l+1].each {|j| error += j.weights[nindex]*j.delta}
+                        n.delta = delsig(n.inval)*error
+                    end
+                end
+
+                # Adjust weights of all layers
+                @nodes.each do |layer|
+                    layer.each do |n|
+                        n.weights.map! {|w| w + lrate*n.activation*n.delta}
+                    end
+                end
             end
         end
     end
 
     # Sigmoid activation function
-    def sigmoid(x)
-        return 1
+    def sig(x)
+        return 1/(1+Math.exp(-x))
     end
 
+    # Derivative of sigmoid function
+    def delsig(x)
+        return sig(x)*(1-sig(x))
+    end
 
-    private :backprop_learn, :sigmoid
+    private :backprop_learn, :sig, :delsig
 end  

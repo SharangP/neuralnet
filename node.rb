@@ -14,7 +14,9 @@ class Node
         @weights = []
         @inval = nil
         @activation = nil
+        @delta = nil
     end
 
-    attr_accessor :inputs, :weights, :inval, :activation
+#    attr_reader :bias_input
+    attr_accessor :inputs, :weights, :inval, :activation, :delta
 end
