@@ -17,10 +17,11 @@ class Node
     def initialize()
         @inputs = []
         @weights = []
+        @bias_weight = nil
         @inval = nil
         @activation = nil
         @delta = nil
     end
 
-    attr_accessor :inputs, :weights, :inval, :activation, :delta
+    attr_accessor :inputs, :weights, :bias_weight, :inval, :activation, :delta
 end

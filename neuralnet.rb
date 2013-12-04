@@ -37,7 +37,9 @@ class NeuralNet
 
             for i in 1..@layers.length-1 #TODO:use each instead
                 @layers[i].each do |n|
-                    n.weights = f.gets.split(" ").map {|s| s.to_f}
+                    line = f.gets.split(" ").map {|s| s.to_f}
+                    n.bias_weight = line[0]
+                    n.weights = line[1..-1]
                     n.inputs = @layers[i-1]
                 end
             end
@@ -53,6 +55,7 @@ class NeuralNet
             f.puts [@nin, @nhidden, @nout].join(" ")
             for i in 1..@layers.length-1
                 @layers[i].each_with_index do |n, nindex|
+                    f.print "%.3f " % n.bias_weight
                     n.weights.each_with_index do |w, windex|
                         f.print "%.3f" % w
                         if windex != n.weights.length-1 then f.print " " end
@@ -95,15 +98,15 @@ class NeuralNet
         nepochs.times do |e|
             puts "Epoch #{e} of #{nepochs}"
 
-            for m in 0..data.length-1
-                # initialize inputs with data
-                data[m].each_with_index {|d, dindex| @layers[0][dindex].activation = d}
+            data.each do |example|
+                # initialize inputs with example
+                example.each_with_index {|d, dindex| @layers[0][dindex].activation = d}
 
                 # propagate inputs forward
                 @layers[1..-1].each do |l|
                     l.each do |n|
-                        n.inval = Node.bias_input*n.weights[0]    #bias weight
-                        n.inputs.each_with_index {|i, iindex| n.inval += n.weights[iindex+1]*i.activation}
+                        n.inval = Node.bias_input*n.bias_weight
+                        n.inputs.each_with_index {|i, iindex| n.inval += n.weights[iindex]*i.activation}
                         n.activation = sig(n.inval)
                     end
                 end
@@ -118,16 +121,18 @@ class NeuralNet
                 for l in 1..@layers.length-2
                     @layers[l].each_with_index do |n, nindex|
                         error = 0
-                        @layers[l+1].each {|j| error += j.weights[nindex+1]*j.delta}
+                        @layers[l+1].each {|j| error += j.weights[nindex]*j.delta}
                         n.delta = delsig(n.inval)*error
                     end
                 end
 
                 # Adjust weights of all layers
-                @layers[0...-1].each_with_index do |l, lindex|
-                    l.each do |n|
-                        wij = 0 #this doesnt work yet.
-                        n.weights.map! {|w| w + lrate*n.activation*n.delta}
+                @layers[1..-1].reverse.each do |lay|
+                    lay.each do |n|
+                        n.bias_weight += lrate*Node.bias_input*n.delta
+                        n.weights.each_with_index do |w, windex|
+                            n.weights[windex] += lrate*n.inputs[windex].activation*n.delta
+                        end
                     end
                 end
             end
