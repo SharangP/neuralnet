@@ -87,6 +87,7 @@ class NeuralNet
                 data << l[0...-1]
                 outputs << l[-1].to_i
             end
+
             backprop_learn(nepochs, lrate, data, outputs)
         end
     end
@@ -101,6 +102,9 @@ class NeuralNet
             data.each do |example|
                 # initialize inputs with example
                 example.each_with_index {|d, dindex| @layers[0][dindex].activation = d}
+
+                #puts "Activations of input layer:"
+                #@layers[0].each {|n| puts n.activation}
 
                 # propagate inputs forward
                 @layers[1..-1].each do |l|
@@ -118,7 +122,7 @@ class NeuralNet
                 end
 
                 # find deltas of each hidden layer
-                for l in 1..@layers.length-2
+                for l in 1..(@layers.length-2)
                     @layers[l].each_with_index do |n, nindex|
                         error = 0
                         @layers[l+1].each {|j| error += j.weights[nindex]*j.delta}
@@ -130,9 +134,7 @@ class NeuralNet
                 @layers[1..-1].reverse.each do |lay|
                     lay.each do |n|
                         n.bias_weight += lrate*Node.bias_input*n.delta
-                        n.weights.each_with_index do |w, windex|
-                            n.weights[windex] += lrate*n.inputs[windex].activation*n.delta
-                        end
+                        n.inputs.each_with_index {|i, iindex| n.weights[iindex] += lrate*i.activation*n.delta}
                     end
                 end
             end
