@@ -7,7 +7,7 @@
 
 require_relative 'node'
 
-
+# Neural Network class
 class NeuralNet
 
     # Constructor
@@ -49,7 +49,6 @@ class NeuralNet
     end
 
     # Prints Neural Network to file
-    # #TODO: add stdout printing if fname==nil
     def print_to_file(fname)
         File.open(fname, 'w') do |f|
             f.puts [@nin, @nhidden, @nout].join(" ")
@@ -66,13 +65,12 @@ class NeuralNet
         end
     end
 
-    # Train neural network
-    # Train with data in file 'fname' at a learning rate of 'lrate'
-    # for 'nepochs' epochs
-    def train(fname, lrate, nepochs)
-        puts "Begin training"
+    # Parse data from training/testing data file
+    def parse_data(fname)
+        data = []
+        outputs = []
+
         File.open(fname, 'r') do |f|
-            #parse the number of nodes in each layer
             nnodes = f.gets.split(" ").map {|s| s.to_i}
             @ntrain = nnodes[0]
             if nnodes[1] != @nin || nnodes[2] != @nout
@@ -80,49 +78,74 @@ class NeuralNet
                 exit
             end
 
-            data = []
-            outputs = []
             f.readlines.each do |line|
                 l = line.split(" ").map {|d| d.to_f}
                 data << l[0...-1]
                 outputs << l[-1].to_i
             end
-
-            backprop_learn(nepochs, lrate, data, outputs)
         end
+
+        return data, outputs
     end
 
-    # Learn optimal weights using backpropagation
+    # Test the performance of the neural network on a set of data
+    def test(fname, outfile)
+        puts "Begin testing"
+
+        data, outputs = parse_data(fname)
+
+        #TODO: compute metrics
+        results = []
+        data.each do |d|
+            results << forward_propagate(d)
+        end
+        puts results.count(0)
+        puts results.count(1)
+    end
+
+    # Train neural network
+    # Train with data in file 'fname' at a learning rate of 'lrate'
+    # for 'nepochs' epochs
+    def train(fname, lrate, nepochs)
+        puts "Begin training"
+        data, outputs = parse_data(fname)
+        backprop_learn(nepochs, lrate, data, outputs)
+    end
+
+    # Propagate input data forward through network
+    def forward_propagate(example) 
+        example.each_with_index {|d, dindex| @layers[0][dindex].activation = d}
+
+        @layers[1..-1].each do |l|
+            l.each do |n|
+                n.inval = n.bias_weight*Node.bias_input
+                n.inputs.each_with_index {|i, iindex| n.inval += n.weights[iindex]*i.activation}
+                n.activation = sig(n.inval)
+            end
+        end
+
+        return @layers[-1][0].activation.round
+    end
+
+    # Learn optimal weights using back-propagation
     # Iterate for nepochs with a learning rate of lrate, adjusting the weights
     # of @layers to map training data 'data' to outputs 'outputs'
     def backprop_learn(nepochs, lrate, data, outputs)
         nepochs.times do |e|
-            puts "Epoch #{e} of #{nepochs}"
+            puts "Epoch #{e+1} of #{nepochs}"
 
             data.each do |example|
-                # initialize inputs with example
-                example.each_with_index {|d, dindex| @layers[0][dindex].activation = d}
+                # Propagate example through network
+                forward_propagate(example)
 
-                #puts "Activations of input layer:"
-                #@layers[0].each {|n| puts n.activation}
-
-                # propagate inputs forward
-                @layers[1..-1].each do |l|
-                    l.each do |n|
-                        n.inval = Node.bias_input*n.bias_weight
-                        n.inputs.each_with_index {|i, iindex| n.inval += n.weights[iindex]*i.activation}
-                        n.activation = sig(n.inval)
-                    end
-                end
-
-                # propagate error backwards
-                # find deltas of output layer
+                # Propagate error backwards
+                # Find deltas of output layer
                 @layers[-1].each_with_index do |n, nindex|
                     n.delta = delsig(n.inval)*(outputs[nindex] - n.activation)
                 end
 
-                # find deltas of each hidden layer
-                for l in 1..(@layers.length-2)
+                # Find deltas of each hidden layer
+                (1..1).each do |l| #TODO: make more general
                     @layers[l].each_with_index do |n, nindex|
                         error = 0
                         @layers[l+1].each {|j| error += j.weights[nindex]*j.delta}
@@ -130,9 +153,9 @@ class NeuralNet
                     end
                 end
 
-                # Adjust weights of all layers
-                @layers[1..-1].reverse.each do |lay|
-                    lay.each do |n|
+                # Adjust all weights
+                @layers[1..-1].reverse.each do |l|
+                    l.each do |n|
                         n.bias_weight += lrate*Node.bias_input*n.delta
                         n.inputs.each_with_index {|i, iindex| n.weights[iindex] += lrate*i.activation*n.delta}
                     end
@@ -151,5 +174,5 @@ class NeuralNet
         return sig(x)*(1-sig(x))
     end
 
-    private :backprop_learn, :sig, :delsig
+    private :forward_propagate, :backprop_learn, :sig, :delsig
 end  

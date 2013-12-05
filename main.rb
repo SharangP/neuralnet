@@ -35,16 +35,16 @@ print "Enter a training/testing file name: "
 print "Enter an output file name: "
 #out = gets.chomp
 
-init = 'data/sample.NNWDBC.init' #remove
+init = 'data/sample.NNWDBC.init' #testing training
+#init = './data/sample.NNWDBC.1.100.trained' #testing testing
 
 nn = NeuralNet.new
 nn.load_from_file(init)
 
-isTest = 0 #remove
 case isTest
 when 0
-    data = 'data/wdbc.mini_train'
-    #data = 'data/wdbc.train'
+    #data = 'data/wdbc.mini_train'
+    data = 'data/wdbc.train'
     out = 'my_wwbdc_mini.trained'
 
     print "Enter a learning rate: "
@@ -52,11 +52,12 @@ when 0
     print "Enter a number of epochs to train for: "
     nepochs = gets.chomp.to_i
 
-    learningRate = 0.1
-
     nn.train(data, learningRate, nepochs)
     nn.print_to_file(out)
 when 1
-    puts "This should probably test the NN."
+    data = './data/wdbc.test'
+    out = 'my_results'
+
+    nn.test(data, out)
 end
 
