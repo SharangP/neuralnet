@@ -80,27 +80,12 @@ class NeuralNet
 
             f.readlines.each do |line|
                 l = line.split(" ").map {|d| d.to_f}
-                data << l[0...-1]
-                outputs << l[-1].to_i
+                data << l.first(@nin)
+                outputs << l.last(@nout)
             end
         end
 
         return data, outputs
-    end
-
-    # Test the performance of the neural network on a set of data
-    def test(fname, outfile)
-        puts "Begin testing"
-
-        data, outputs = parse_data(fname)
-
-        #TODO: compute metrics
-        results = []
-        data.each do |d|
-            results << forward_propagate(d)
-        end
-        puts results.count(0)
-        puts results.count(1)
     end
 
     # Train neural network
@@ -110,6 +95,64 @@ class NeuralNet
         puts "Begin training"
         data, outputs = parse_data(fname)
         backprop_learn(nepochs, lrate, data, outputs)
+    end
+
+    # Test the performance of the neural network
+    # Propagate each example in the file 'fname' through the network
+    # and compute a confusion matrix, precision, recall, and f-measure.
+    def test(fname, outfile)
+        puts "Begin testing"
+
+        data, outputs = parse_data(fname)
+        outputs = outputs.transpose
+
+        results = []
+        data.each_with_index do |d, dindex|
+            results << forward_propagate(d)
+        end
+
+        a = b = c = d = Array.new(@nout)
+        macro_accuracy = macro_precision = macro_recall = 0.0
+
+        File.open(outfile, 'w') do |f|
+            results.transpose.each_with_index do |result, rindex|
+                z = outputs[rindex].zip(result)
+                a_tmp = z.count {|o,r| (o==1)&(r==1)}
+                b_tmp = z.count {|o,r| (o==0)&(r==1)}
+                c_tmp = z.count {|o,r| (o==1)&(r==0)}
+                d_tmp = z.count {|o,r| (o==0)&(r==0)}
+                
+                macro_accuracy  += accuracy = (a_tmp + d_tmp)/(a_tmp.to_f + b_tmp + c_tmp + d_tmp)
+                macro_precision  += precision = a_tmp/(a_tmp.to_f + b_tmp)
+                macro_recall  += recall = a_tmp/(a_tmp.to_f + c_tmp)
+                f1 = 2*precision*recall/(precision+recall)
+
+                a[rindex] = a_tmp
+                b[rindex] = b_tmp
+                c[rindex] = c_tmp
+                d[rindex] = d_tmp
+
+                f.print "%d %d %d %d %.3f %.3f %.3f %.3f\n" % [a_tmp, b_tmp, c_tmp, d_tmp, accuracy, precision, recall, f1]
+            end
+
+            global_a = a.reduce(:+).to_f
+            global_b = b.reduce(:+).to_f
+            global_c = c.reduce(:+).to_f
+            global_d = d.reduce(:+).to_f
+
+            micro_accuracy = (global_a + global_d)/(global_a + global_b + global_c + global_d)
+            micro_precision = global_a/(global_a + global_b)
+            micro_recall = global_a/(global_a + global_c)
+            micro_f1 = 2*micro_precision*micro_recall/(micro_precision+micro_recall)
+
+            macro_accuracy /= @nout
+            macro_precision /= @nout
+            macro_recall /= @nout            
+            macro_f1 = 2*macro_precision*macro_recall/(macro_precision+macro_recall)
+            
+            f.print "%.3f %.3f %.3f %.3f\n" % [micro_accuracy, micro_precision, micro_recall, micro_f1]
+            f.print "%.3f %.3f %.3f %.3f\n" % [macro_accuracy, macro_precision, macro_recall, macro_f1]
+        end
     end
 
     # Propagate input data forward through network
@@ -124,7 +167,9 @@ class NeuralNet
             end
         end
 
-        return @layers[-1][0].activation.round
+        results = []
+        @layers[-1].each {|output| results << output.activation.round}
+        return results
     end
 
     # Learn optimal weights using back-propagation

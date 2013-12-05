@@ -35,8 +35,8 @@ print "Enter a training/testing file name: "
 print "Enter an output file name: "
 #out = gets.chomp
 
-init = 'data/sample.NNWDBC.init' #testing training
-#init = './data/sample.NNWDBC.1.100.trained' #testing testing
+#init = 'data/sample.NNWDBC.init' #testing training
+init = './data/sample.NNGrades.05.100.trained' #testing testing
 
 nn = NeuralNet.new
 nn.load_from_file(init)
@@ -55,8 +55,8 @@ when 0
     nn.train(data, learningRate, nepochs)
     nn.print_to_file(out)
 when 1
-    data = './data/wdbc.test'
-    out = 'my_results'
+    data = './data/grades.test'
+    out = 'my_grades_results'
 
     nn.test(data, out)
 end
