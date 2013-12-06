@@ -5,8 +5,8 @@
 # 11/30/2013
 #########################
 
-# Neural Network Node class
 
+# Neural Network Node class
 class Node
     @@bias_input = -1
     
