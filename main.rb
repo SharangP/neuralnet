@@ -27,8 +27,9 @@ isTest = gets.chomp.to_i
 
 print "Enter an initialization file name: "
 init = file_prompt()
-print "Enter a training/testing file name: "
-data = file_prompt()
+#print "Enter a training/testing file name: "
+#data = file_prompt()
+data = './pima.train'
 print "Enter an output file name: "
 out = gets.chomp
 
@@ -37,10 +38,13 @@ nn.load_from_file(init)
 
 case isTest
 when 0
-    print "Enter a learning rate: "
-    learningRate = gets.chomp.to_f
-    print "Enter a number of epochs to train for: "
-    nepochs = gets.chomp.to_i
+    #print "Enter a learning rate: "
+    #learningRate = gets.chomp.to_f
+    #print "Enter a number of epochs to train for: "
+    #nepochs = gets.chomp.to_i
+    
+    learningRate = 0.1
+    nepochs = 100
 
     nn.train(data, learningRate, nepochs)
     nn.print_to_file(out)
