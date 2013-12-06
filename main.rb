@@ -21,33 +21,22 @@ def file_prompt()
     return fname
 end
 
-
-# MAIN PROGRAM
 puts "Welcome to Sharang's Neural Net Program"
 print "Training (0) or testing (1)?: "
 isTest = gets.chomp.to_i
-#TODO: make sure isTest is 0 or 1
 
 print "Enter an initialization file name: "
-#init = file_prompt()
+init = file_prompt()
 print "Enter a training/testing file name: "
-#data = file_prompt()
+data = file_prompt()
 print "Enter an output file name: "
-#out = gets.chomp
-
-#init = 'data/sample.NNWDBC.init' #testing training
-init = 'data/sample.NNWDBC.1.100.trained' #testing training
-#init = './data/sample.NNGrades.05.100.trained' #testing testing
+out = gets.chomp
 
 nn = NeuralNet.new
 nn.load_from_file(init)
 
 case isTest
 when 0
-    #data = 'data/wdbc.mini_train'
-    data = 'data/wdbc.train'
-    out = 'my_wwbdc_mini.trained'
-
     print "Enter a learning rate: "
     learningRate = gets.chomp.to_f
     print "Enter a number of epochs to train for: "
@@ -56,10 +45,5 @@ when 0
     nn.train(data, learningRate, nepochs)
     nn.print_to_file(out)
 when 1
-    data = './data/wdbc.test'
-    #data = './data/grades.test'
-    out = 'my_results'
-
     nn.test(data, out)
 end
-

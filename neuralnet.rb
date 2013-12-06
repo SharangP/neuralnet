@@ -53,14 +53,14 @@ class NeuralNet
     def print_to_file(fname)
         File.open(fname, 'w') do |f|
             f.puts [@nin, @nhidden, @nout].join(" ")
-            for i in 1..@layers.length-1
-                @layers[i].each_with_index do |n, nindex|
+            @layers[1..-1].each do |l|
+                l.each_with_index do |n, nindex|
                     f.print "%.3f " % n.bias_weight
                     n.weights.each_with_index do |w, windex|
                         f.print "%.3f" % w
-                        if windex != n.weights.length-1 then f.print " " end
+                        endchar = (windex == n.weights.length-1) ? "\n" : " "
+                        f.print endchar
                     end
-                    if nindex != n.weights.length-1 then f.print "\n" end
                 end
             end
         end
@@ -190,14 +190,14 @@ class NeuralNet
         nepochs.times do |e|
             puts "Epoch #{e+1} of #{nepochs}"
 
-            data.each do |example|
+            data.zip(outputs).each do |example|
                 # Propagate example through network
-                forward_propagate(example)
+                forward_propagate(example[0])
 
                 # Propagate error backwards
                 # Find deltas of output layer
                 @layers[-1].each_with_index do |n, nindex|
-                    n.delta = delsig(n.inval)*(outputs[nindex] - n.activation)
+                    n.delta = delsig(n.inval)*(example[1][nindex] - n.activation)
                 end
 
                 # Find deltas of each hidden layer
