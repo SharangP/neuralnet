@@ -1,6 +1,15 @@
 #########################
 # Neural Network
 #
+# This implementation of a neural network in ruby allows for training and
+# testing using text files in a specified format. Training consists of loading
+# the initial weights for the neural network from a file, and adjusting the
+# weights using the examples provided in the data file. Weights are adjusted
+# using back-propagation. Testing consists of propagating each example provided
+# in a data file through the network and computing a confusion matrix,
+# accuracy, precision, recall, and f-measure for each output node, as well as
+# micro and macro averages of each metric.
+#
 # Sharang Phadke
 # 11/30/2013
 #########################
@@ -11,12 +20,6 @@ class NeuralNet
 
     # Node class
     class Node
-        @@bias_input = -1
-        
-        def self.bias_input
-            @@bias_input
-        end
-
         def initialize()
             @inputs = []
             @weights = []
@@ -29,6 +32,7 @@ class NeuralNet
         attr_accessor :inputs, :weights, :bias_weight, :inval, :activation, :delta
     end
 
+    @@bias_input = -1
 
     # Constructor
     def initialize()
@@ -40,22 +44,23 @@ class NeuralNet
     end
 
     # Loads Neural Network from file
-    # first line of input specifies # input nodes, # hidden nodes, and # output
+    # First line of input specifies # input nodes, # hidden nodes, and # output
     # nodes. The next nhidden lines specify the initial weights of hidden
     # nodes. The next line specifies the initial weights of output nodes.
     def load_from_file(fname)
         File.open(fname, 'r') do |f|
-            #parse the number of nodes in each layer
+            # parse the number of nodes in each layer
             nnodes = f.gets.split(" ").map {|s| s.to_i}
             @nin = nnodes[0]
             @nhidden = nnodes[1]
             @nout = nnodes[2]
 
+            # initialize and fill transition weights
             @layers = [Array.new(@nin) {Node.new},
                       Array.new(@nhidden) {Node.new},
                       Array.new(@nout) {Node.new}]
 
-            for i in 1..@layers.length-1 #TODO:use each instead
+            for i in 1..@layers.length-1
                 @layers[i].each do |n|
                     line = f.gets.split(" ").map {|s| s.to_f}
                     n.bias_weight = line[0]
@@ -64,7 +69,7 @@ class NeuralNet
                 end
             end
             
-            $stderr.puts "initializing a neural network with #{@nin} input nodes, #{@nhidden} hidden nodes, and #{@nout} output nodes"
+            puts "Initializing a neural network with #{@nin} input nodes, #{@nhidden} hidden nodes, and #{@nout} output nodes"
         end
     end
 
@@ -86,6 +91,9 @@ class NeuralNet
     end
 
     # Parse data from training/testing data file
+    # First line of input specifies # examples, # input nodes, and # output
+    # nodes. The next ntrain lines each specify an example, which have nin
+    # followed by nout outputs.
     def parse_data(fname)
         data = []
         outputs = []
@@ -108,17 +116,19 @@ class NeuralNet
     end
 
     # Train neural network
-    # Train with data in file 'fname' at a learning rate of 'lrate'
-    # for 'nepochs' epochs
+    # Train with data in file fname at a learning rate of lrate
+    # for nepochs epochs
     def train(fname, lrate, nepochs)
         puts "Begin training"
         data, outputs = parse_data(fname)
         learn(nepochs, lrate, data, outputs)
+        puts "Training complete"
     end
 
     # Test the performance of the neural network
-    # Propagate each example in the file 'fname' through the network
-    # and compute a confusion matrix, precision, recall, and f-measure.
+    # Propagate each example in the file fname through the network and compute
+    # a confusion matrix, accuracy, precision, recall, and f-measure by class,
+    # as well as micro and macro averages
     def test(fname, outfile)
         puts "Begin testing"
 
@@ -177,13 +187,17 @@ class NeuralNet
             # Macro-average metrics
             macro_accuracy /= @nout
             macro_precision /= @nout
-            macro_recall /= @nout            
+            macro_recall /= @nout
             macro_f1 = 2*macro_precision*macro_recall/(macro_precision + macro_recall)
             
             f.print "%.3f %.3f %.3f %.3f\n" % [micro_accuracy, micro_precision, micro_recall, micro_f1]
             f.print "%.3f %.3f %.3f %.3f\n" % [macro_accuracy, macro_precision, macro_recall, macro_f1]
+
+            puts "Testing complete"
         end
     end
+
+private
 
     # Propagate input data forward through network
     def forward_propagate(example) 
@@ -191,7 +205,7 @@ class NeuralNet
 
         @layers[1..-1].each do |l|
             l.each do |n|
-                n.inval = n.bias_weight*Node.bias_input
+                n.inval = n.bias_weight*@@bias_input
                 n.inputs.each_with_index {|i, iindex| n.inval += n.weights[iindex]*i.activation}
                 n.activation = sig(n.inval)
             end
@@ -204,7 +218,7 @@ class NeuralNet
 
     # Learn optimal weights using back-propagation
     # Iterate for nepochs with a learning rate of lrate, adjusting the weights
-    # of @layers to map training data 'data' to outputs 'outputs'
+    # of @layers to map training data to outputs
     def learn(nepochs, lrate, data, outputs)
         nepochs.times do |e|
             puts "Epoch #{e+1} of #{nepochs}"
@@ -220,7 +234,7 @@ class NeuralNet
                 end
 
                 # Find deltas of each hidden layer
-                (1..1).each do |l| #TODO: make more general
+                (1..@layers.length-2).each do |l|
                     @layers[l].each_with_index do |n, nindex|
                         error = 0
                         @layers[l+1].each {|j| error += j.weights[nindex]*j.delta}
@@ -231,7 +245,7 @@ class NeuralNet
                 # Adjust all weights
                 @layers[1..-1].reverse.each do |l|
                     l.each do |n|
-                        n.bias_weight += lrate*Node.bias_input*n.delta
+                        n.bias_weight += lrate*@@bias_input*n.delta
                         n.inputs.each_with_index {|i, iindex| n.weights[iindex] += lrate*i.activation*n.delta}
                     end
                 end
@@ -248,6 +262,4 @@ class NeuralNet
     def delsig(x)
         return sig(x)*(1-sig(x))
     end
-
-    private :forward_propagate, :learn, :sig, :delsig
 end  
